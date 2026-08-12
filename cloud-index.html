@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCSP Notes Practice Exam</title>
+<style>
+:root{
+  --navy:#1a2b4c; --blue:#0057a3; --green:#1e824c; --amber:#c98e00; --red:#b3261e;
+  --bg:#f4f6f9; --card:#ffffff; --border:#d9dee5; --text:#1c2530; --muted:#5a6472;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);}
+header{background:var(--navy);color:#fff;padding:18px 24px;}
+header h1{margin:0;font-size:1.25rem;}
+header p{margin:4px 0 0;font-size:.85rem;color:#c9d3e0;}
+.container{max-width:860px;margin:0 auto;padding:24px 16px 60px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:22px 24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+button{cursor:pointer;font-size:.95rem;border:none;border-radius:6px;padding:10px 20px;background:var(--blue);color:#fff;font-weight:600;}
+button:hover{background:#00427d;}
+button.secondary{background:#fff;color:var(--blue);border:1px solid var(--blue);}
+button.secondary:hover{background:#eef4fb;}
+button:disabled{background:#aab4bf;cursor:not-allowed;}
+.qnum{font-weight:700;color:var(--blue);margin-right:6px;}
+.qtext{font-weight:600;margin-bottom:10px;line-height:1.4;}
+.opt{display:block;padding:9px 12px;margin:6px 0;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:.15s;}
+.opt:hover{background:#f0f4f9;}
+.opt input{margin-right:10px;}
+.opt.selected{border-color:var(--blue);background:#eaf1fb;}
+.progress-wrap{position:sticky;top:0;background:var(--bg);padding:10px 0 6px;z-index:10;}
+.progress-bar{height:8px;background:#dde3ea;border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--blue);width:0%;transition:width .2s;}
+.progress-label{font-size:.8rem;color:var(--muted);margin-top:4px;text-align:right;}
+.nav-row{display:flex;justify-content:space-between;margin-top:18px;}
+.pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.72rem;font-weight:700;color:#fff;}
+.pill.EXEMPLARY{background:var(--green);}
+.pill.COMPETENT{background:var(--blue);}
+.pill.APPROACHING{background:var(--amber);}
+.pill.NOTCOMPETENT{background:var(--red);}
+.comp-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.comp-row:last-child{border-bottom:none;}
+.comp-name{flex:1;font-weight:600;font-size:.92rem;}
+.comp-pct{font-size:.82rem;color:var(--muted);margin-right:10px;}
+.answer-block{border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:14px;}
+.answer-block.correct{border-left:5px solid var(--green);}
+.answer-block.incorrect{border-left:5px solid var(--red);}
+.ans-opt{padding:6px 10px;border-radius:5px;margin:3px 0;font-size:.9rem;}
+.ans-opt.your{background:#fde8e8;border:1px solid var(--red);}
+.ans-opt.correctans{background:#e5f5ec;border:1px solid var(--green);font-weight:600;}
+.ans-opt.both{background:#e5f5ec;border:1px solid var(--green);font-weight:600;}
+.tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+.summary-score{font-size:2.4rem;font-weight:800;color:var(--navy);}
+.status-pass{color:var(--green);}
+.status-fail{color:var(--red);}
+.hidden{display:none;}
+.desc{font-size:.92rem;line-height:1.5;color:var(--muted);}
+.filterbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filterbar button{padding:6px 14px;font-size:.8rem;background:#fff;color:var(--blue);border:1px solid var(--blue);}
+.filterbar button.active{background:var(--blue);color:#fff;}
+footer{text-align:center;color:var(--muted);font-size:.78rem;padding:20px 0;}
+</style>
+</head>
+<body>
+<header>
+  <h1>CCSP Notes Practice Exam</h1>
+  <p>80-question practice exam built from your CCSP study notes &middot; Coaching Report style results</p>
+</header>
+<div class="container" id="app"></div>
+<footer>Practice exam generated for personal study use from your uploaded CCSP notes.</footer>
+
+<script>
+const COMPETENCIES = {
+  "Arch":     {name:"Architectural Concepts &amp; Design", weight:20},
+  "Data":     {name:"Data Classification &amp; Cloud Data Security", weight:20},
+  "SecResp":  {name:"Security in the Cloud &amp; Responsibilities", weight:13},
+  "App":      {name:"Cloud Application Security", weight:16},
+  "Ops":      {name:"Operations Elements &amp; Management", weight:16},
+  "Legal":    {name:"Legal, Compliance &amp; Risk", weight:16}
+};
+
+const QUESTIONS = [{"n": 1, "cat": "Arch", "text": "Which cloud characteristic means an organization only pays for the resources it actually uses?", "opts": ["Rapid elasticity", "Metered service", "Cloud bursting", "Broad network access"], "correct": 1}, {"n": 2, "cat": "Arch", "text": "Which term describes the practice of an organization renting additional capacity from an external cloud provider during a demand spike, such as a crisis or holiday shopping period?", "opts": ["Cloud bursting", "Scalability", "Metered service", "Simplicity"], "correct": 0}, {"n": 3, "cat": "Arch", "text": "Which financial term is a profitability ratio calculated by dividing net profits by net assets?", "opts": ["ALE", "ROI", "SLE", "ARO"], "correct": 1}, {"n": 4, "cat": "Arch", "text": "Which cloud service model is considered the least expensive option, gives the customer the most responsibility for OS and software, and can serve as a warm site for BC/DR?", "opts": ["SaaS", "PaaS", "IaaS", "DaaS"], "correct": 2}, {"n": 5, "cat": "Arch", "text": "Which cloud service model includes the OS and lets the vendor handle patching, administering, and updating it, while the customer installs their own software and can test across multiple OS platforms?", "opts": ["IaaS", "PaaS", "SaaS", "FaaS"], "correct": 1}, {"n": 6, "cat": "Arch", "text": "Which type of data is qualitative, includes natural-language text and media such as audio, video, and images, and is often stored using object storage (NoSQL)?", "opts": ["Structured data", "Semi-structured data", "Unstructured data", "Metadata"], "correct": 2}, {"n": 7, "cat": "Arch", "text": "In which cloud deployment model do multiple customers share resources on the same underlying hardware without knowing who else is using it?", "opts": ["Private cloud", "Public cloud", "Community cloud", "Hybrid cloud"], "correct": 1}, {"n": 8, "cat": "Arch", "text": "Which cloud deployment model features infrastructure owned and operated by or for an affinity group, such as several organizations pursuing a joint task?", "opts": ["Public cloud", "Private cloud", "Community cloud", "Hybrid cloud"], "correct": 2}, {"n": 9, "cat": "Arch", "text": "Which role purchases hosting services from a cloud provider and resells them to its own customers?", "opts": ["Cloud carrier", "Cloud broker", "Cloud auditor", "Regulator"], "correct": 1}, {"n": 10, "cat": "Arch", "text": "Which third-party entity offers independent identity and access management services, such as SSO, certificate management, and cryptographic key escrow, to cloud service providers and customers?", "opts": ["CASB", "CSA", "ENISA", "ISMS"], "correct": 0}, {"n": 11, "cat": "Arch", "text": "Which threat model uses the categories Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, and Elevation of Privilege?", "opts": ["OWASP Top 10", "CIA Triad", "STRIDE", "CCM"], "correct": 2}, {"n": 12, "cat": "Arch", "text": "Which theoretical encryption technology would allow a cloud customer to process encrypted material without first decrypting it, avoiding the need to share keys with the provider?", "opts": ["Format-preserving encryption", "Homomorphic encryption", "Proxy re-encryption", "Tokenization"], "correct": 1}, {"n": 13, "cat": "Arch", "text": "Which of the four risk treatment strategies involves an organization deciding not to pursue a business opportunity at all because the risk exceeds its risk appetite?", "opts": ["Acceptance", "Mitigation", "Transference", "Avoidance"], "correct": 3}, {"n": 14, "cat": "Arch", "text": "An organization purchases insurance to cover a low-probability, high-impact event instead of building additional controls. Which risk treatment strategy is this?", "opts": ["Transference", "Avoidance", "Acceptance", "Mitigation"], "correct": 0}, {"n": 15, "cat": "Arch", "text": "After an organization applies countermeasures and controls to a risk, what is the term for the risk that remains?", "opts": ["Inherent risk", "Residual risk", "Total risk", "Risk appetite"], "correct": 1}, {"n": 16, "cat": "Arch", "text": "In which cloud service model does the cloud customer retain the most responsibility and authority, while the provider is only responsible for the building, land, connectivity, power, and hardware?", "opts": ["SaaS", "PaaS", "IaaS", "CaaS"], "correct": 2}, {"n": 17, "cat": "Data", "text": "Which role is described as the organization or department head/business unit manager that creates or collects the data, and remains legally responsible for it?", "opts": ["Data custodian", "Data processor", "Data owner", "Data controller"], "correct": 2}, {"n": 18, "cat": "Data", "text": "Which role manipulates, stores, or moves data on behalf of the data owner, and in international law is often the cloud provider itself?", "opts": ["Data owner", "Data custodian", "Data processor", "Data subject"], "correct": 2}, {"n": 19, "cat": "Data", "text": "Place the phases of the data lifecycle in the correct order.", "opts": ["Create, Use, Store, Share, Destroy, Archive", "Create, Store, Use, Share, Archive, Destroy", "Store, Create, Use, Archive, Share, Destroy", "Create, Share, Store, Use, Archive, Destroy"], "correct": 1}, {"n": 20, "cat": "Data", "text": "Which data categorization approach organizes datasets according to regulations such as GLBA, PCI, SOX, HIPAA, and GDPR?", "opts": ["Business function", "Functional unit", "Regulatory compliance", "By project"], "correct": 2}, {"n": 21, "cat": "Data", "text": "Which data classification factor is based on the geophysical location of the source or storage point of the data, such as PII from EU citizens being subject to EU privacy laws?", "opts": ["Sensitivity", "Jurisdiction", "Criticality", "Mapping"], "correct": 1}, {"n": 22, "cat": "Data", "text": "When data belonging to one organization is shared with another, which process normalizes and translates that data so its sensitivity classification is meaningful and recognized by the receiving organization?", "opts": ["Data labeling", "Data mapping", "Data discovery", "Data categorization"], "correct": 1}, {"n": 23, "cat": "Data", "text": "A data label should indicate who the data owner is by role or office. Which of the following should NOT typically be included in a data label to avoid disclosing the data it describes?", "opts": ["Date of creation", "Confidentiality level", "The individual's personal name or identity", "Applicable regulation"], "correct": 2}, {"n": 24, "cat": "Data", "text": "Which type of data discovery relies on scanning fields that carry traits and characteristics about data elements, similar to how labels are used?", "opts": ["Content-based discovery", "Label-based discovery", "Metadata-based discovery", "E-discovery"], "correct": 2}, {"n": 25, "cat": "Data", "text": "Which type of intellectual property protection covers expressions of ideas such as literary works, films, music, and software, lasting 70 years after the author's death?", "opts": ["Trademark", "Patent", "Copyright", "Trade secret"], "correct": 2}, {"n": 26, "cat": "Data", "text": "Which IRM in the cloud complication occurs specifically because intellectual property rights are restricted differently across the various boundaries and borders the cloud extends across?", "opts": ["Replication restrictions", "Jurisdictional conflicts", "Agent/enterprise conflicts", "API conflicts"], "correct": 1}, {"n": 27, "cat": "Data", "text": "Because hardware destruction or overwriting is nearly impossible in a cloud environment, which method is considered the sole pragmatic option for data disposal during the Destroy phase?", "opts": ["Degaussing", "Wiping", "Crypto-shredding", "Physical shredding"], "correct": 2}, {"n": 28, "cat": "Data", "text": "Which US export control regulation, enforced by the Department of Commerce, prohibits the export of dual-use items — technologies with both commercial and military applications?", "opts": ["ITAR", "EAR", "The Wassenaar Arrangement", "CLOUD Act"], "correct": 1}, {"n": 29, "cat": "Data", "text": "Which cloud storage architecture provides low latency and high performance, is a blank volume the customer can put anything into, and is well suited to enterprise backup services storing multiple data types?", "opts": ["Object-based storage", "File-based storage", "Block storage", "Ephemeral storage"], "correct": 2}, {"n": 30, "cat": "Data", "text": "Which cloud storage type is best for large amounts of unstructured data, includes metadata describing the content plus a unique address identifier, and is often used for documents, presentations, and audio files?", "opts": ["Volume storage", "Object-based storage", "SAN storage", "NAS storage"], "correct": 1}, {"n": 31, "cat": "Data", "text": "Which type of storage is temporary, referred to as instance store volumes, analogous to RAM for a cloud VM, and results in data loss if the VM instance shuts down?", "opts": ["Long-term storage", "Ephemeral storage", "Archival storage", "Block storage"], "correct": 1}, {"n": 32, "cat": "Data", "text": "Which device is used to securely store and manage encryption keys and is considered far stronger than storing keys in software?", "opts": ["TPM", "HSM", "CASB", "SIEM"], "correct": 1}, {"n": 33, "cat": "Data", "text": "Which data protection technique permanently replaces sensitive data by altering the data at rest, as opposed to only replacing it while in transit?", "opts": ["Dynamic Data Masking (DDM)", "Static Data Masking (SDM)", "Tokenization", "Randomization"], "correct": 1}, {"n": 34, "cat": "Data", "text": "Which technique uses two distinct databases — one with live sensitive data and one with nonrepresentational values mapped to that data — authenticated through a token server?", "opts": ["Masking", "Anonymization", "Tokenization", "Obfuscation"], "correct": 2}, {"n": 35, "cat": "SecResp", "text": "Which cloud risk occurs when a customer is unable to leave, migrate, retrieve, or transfer their data to another provider due to technical or nontechnical constraints, such as a proprietary data format?", "opts": ["Vendor lock-out", "Data portability", "Vendor lock-in", "Regulatory failure"], "correct": 2}, {"n": 36, "cat": "SecResp", "text": "Which situation occurs when a customer is unable to recover or access their own data because the cloud provider went bankrupt or ceased operations?", "opts": ["Vendor lock-in", "Vendor lock-out", "Data seizure", "Inadvertent disclosure"], "correct": 1}, {"n": 37, "cat": "SecResp", "text": "Which type of hypervisor is also called a bare-metal or hardware hypervisor and resides directly on the host machine as bootable software?", "opts": ["Type 1", "Type 2", "VMI", "NFV"], "correct": 0}, {"n": 38, "cat": "SecResp", "text": "When a user leaves their own virtualized instance and is able to access other virtualized instances on the same host or affect the host itself, what is this called?", "opts": ["Host escape", "Guest escape (VM escape)", "VM introspection", "Container breakout"], "correct": 1}, {"n": 39, "cat": "SecResp", "text": "Which technology replaces network appliance hardware with virtual machines, using a hypervisor to run networking software such as routing and load balancing?", "opts": ["SDN", "NFV", "VMI", "CDN"], "correct": 1}, {"n": 40, "cat": "SecResp", "text": "Which networking approach uses software-based controllers or APIs to communicate with underlying hardware and direct traffic, allowing admins to reroute traffic and create logical subnets without physical changes?", "opts": ["NFV", "SDN", "VMI", "SAN"], "correct": 1}, {"n": 41, "cat": "SecResp", "text": "Which SOC report type audits an organization's controls over security, availability, processing integrity, confidentiality, and privacy?", "opts": ["SOC 1", "SOC 2", "SOC 3", "SOC 4"], "correct": 1}, {"n": 42, "cat": "SecResp", "text": "Which SOC report subtype only reviews the design of controls, without evaluating how they are actually implemented, maintained, or functioning — making it less useful for determining true security posture?", "opts": ["SOC 2 Type 1", "SOC 2 Type 2", "SOC 3", "SOC 1 Type 2"], "correct": 0}, {"n": 43, "cat": "SecResp", "text": "Which SOC report is designed to be shared publicly as a general seal of approval, containing no details about the actual security controls tested?", "opts": ["SOC 1", "SOC 2 Type 1", "SOC 2 Type 2", "SOC 3"], "correct": 3}, {"n": 44, "cat": "SecResp", "text": "Which risk is specifically associated with a private cloud deployment, given that it is a distributed computing environment used by only one customer?", "opts": ["Shared access and control mechanisms", "Personnel threats and natural disasters", "Decreased visibility into resource usage", "Regulatory noncompliance from other tenants"], "correct": 1}, {"n": 45, "cat": "App", "text": "Which term describes moving an entire self-contained application to the cloud without making significant changes to it?", "opts": ["Refactoring", "Forklifting", "Replatforming", "Orchestration"], "correct": 1}, {"n": 46, "cat": "App", "text": "During which phase of the Cloud-Secure SDLC does the team focus purely on identifying business requirements without yet selecting any tools or technologies?", "opts": ["Designing", "Defining", "Development", "Testing"], "correct": 1}, {"n": 47, "cat": "App", "text": "Which two types of application security testing occur during the Testing phase of the Cloud-Secure SDLC?", "opts": ["Functional and regression testing", "DAST and SAST", "Unit and integration testing", "Black box and white box testing"], "correct": 1}, {"n": 48, "cat": "App", "text": "Under ISO/IEC 27034-1, which framework catalogs all components of application security controls and best practices used across an entire organization?", "opts": ["ANF", "ONF", "XACML", "CCM"], "correct": 1}, {"n": 49, "cat": "App", "text": "What is the relationship between the ONF and ANF under ISO/IEC 27034-1?", "opts": ["Each ANF maps to many ONFs, and each ONF has only one ANF", "Each ANF maps back to one ONF, but one ONF can have many ANFs", "ONF and ANF map one-to-one only", "ANF replaces the ONF once an application is deployed"], "correct": 1}, {"n": 50, "cat": "App", "text": "Which identity management phase involves issuing each subject a unique identity assertion, such as a user ID, along with a password to authenticate that assertion?", "opts": ["Access management", "Provisioning", "Federation", "Authorization"], "correct": 1}, {"n": 51, "cat": "App", "text": "In a trusted third-party federation model using a CASB, what role do the member organizations play?", "opts": ["Identifiers", "Relying parties", "Data controllers", "Data processors"], "correct": 1}, {"n": 52, "cat": "App", "text": "Which XML-based federation standard provides a framework for communicating authentication, authorization, and attribute information across organizations?", "opts": ["OAuth", "SAML", "OpenID Connect", "SCIM"], "correct": 1}, {"n": 53, "cat": "App", "text": "Which protocol is used in authorization scenarios with mobile apps, providing third-party applications limited access to HTTP services?", "opts": ["SAML", "WS-Federation", "OAuth", "XACML"], "correct": 2}, {"n": 54, "cat": "App", "text": "Which security control functions at Layer 7 of the OSI model and is deployed in addition to a network firewall specifically to protect web-based applications from attacks like SQL injection?", "opts": ["Stateful packet inspection firewall", "WAF", "DAM", "API Gateway"], "correct": 1}, {"n": 55, "cat": "App", "text": "Which type of API relies on stateless, client-server, cacheable communication and works well when bandwidth is limited or caching is needed?", "opts": ["SOAP", "RESTful API", "XML-RPC", "gRPC"], "correct": 1}, {"n": 56, "cat": "App", "text": "Which protocol specification for exchanging structured information is standards-based, reliant on XML, highly intolerant of errors, but well suited for stateful operations and format contracts?", "opts": ["REST", "SOAP", "JSON-RPC", "SCIM"], "correct": 1}, {"n": 57, "cat": "App", "text": "Which type of testing reviews an application's source code directly and is also known as SAST?", "opts": ["Black-box testing", "White-box testing", "Abuse case testing", "Fuzz testing"], "correct": 1}, {"n": 58, "cat": "Ops", "text": "What is the industry service standard for uptime, often described as \"five nines,\" allowing less than about 6 minutes of downtime per year?", "opts": ["99.9%", "99.99%", "99.999%", "100%"], "correct": 2}, {"n": 59, "cat": "Ops", "text": "Which Uptime Institute tier is known as Basic Site Infrastructure, requiring at minimum a UPS, sufficient cooling, and a generator with at least 12 hours of fuel, but little to no redundancy?", "opts": ["Tier 1", "Tier 2", "Tier 3", "Tier 4"], "correct": 0}, {"n": 60, "cat": "Ops", "text": "Which Uptime Institute tier, called Concurrently Maintainable Site Infrastructure, has multiple distribution paths and dual power supplies so critical operations continue even if a single component fails?", "opts": ["Tier 1", "Tier 2", "Tier 3", "Tier 4"], "correct": 2}, {"n": 61, "cat": "Ops", "text": "Which specialized chip secures hardware with integrated cryptographic keys, helping prove a user's identity, authenticate devices, and defend against firmware and ransomware attacks?", "opts": ["HSM", "TPM", "CASB", "IPS"], "correct": 1}, {"n": 62, "cat": "Ops", "text": "In which type of storage cluster are all storage devices directly connected to a shared physical backplane, confining the design but enhancing performance as it scales?", "opts": ["Loosely coupled clusters", "Tightly coupled clusters", "Object clusters", "Ephemeral clusters"], "correct": 1}, {"n": 63, "cat": "Ops", "text": "Which cloud-based data protection method slices data into encrypted chunks (shards) with parity bits (erasure coding) written across multiple drives, and is considered the cloud equivalent of a RAID array?", "opts": ["RAID", "Data dispersion", "SSMS", "Tightly coupled clustering"], "correct": 1}, {"n": 64, "cat": "Ops", "text": "What is the recommended ASHRAE temperature range for a data center?", "opts": ["50-70 degrees F", "64-81 degrees F", "70-90 degrees F", "32-50 degrees F"], "correct": 1}, {"n": 65, "cat": "Ops", "text": "When a system is put into maintenance mode, what should happen to logging?", "opts": ["Logging should be disabled to reduce noise", "Logging should continue and enhanced logging should begin", "Only error-level logging should continue", "Logging should switch to TRACE only"], "correct": 1}, {"n": 66, "cat": "Ops", "text": "Which term describes an unscheduled impact to the operating environment that lasts three days or less, as opposed to a disaster which lasts longer?", "opts": ["Incident", "Event", "Outage", "Breach"], "correct": 1}, {"n": 67, "cat": "Ops", "text": "Which BC/DR metric represents how long an interruption can be tolerated before it stops operations, also known as maximum tolerable downtime?", "opts": ["RTO", "RPO", "MAD/MTD", "MTTR"], "correct": 2}, {"n": 68, "cat": "Ops", "text": "An organization backs up data every 24 hours and can tolerate losing no more than one day's worth of data during an outage. Which metric does this describe?", "opts": ["RTO", "RPO", "MTTR", "ALE"], "correct": 1}, {"n": 69, "cat": "Ops", "text": "Which formula correctly calculates Annual Loss Expectancy (ALE)?", "opts": ["ALE = ARO / SLE", "ALE = ARO x SLE", "ALE = SLE / ARO", "ALE = ARO + SLE"], "correct": 1}, {"n": 70, "cat": "Ops", "text": "Which BC/DR testing type involves the entire organization taking part in an unscheduled, unannounced scenario including full system failover and facility evacuation, causing the greatest impact on productivity?", "opts": ["Tabletop testing", "Dry run", "Full test", "Walkthrough"], "correct": 2}, {"n": 71, "cat": "Legal", "text": "Which US law is aka the Financial Services Modernization Act of 1999, allowing banks to merge with insurance companies while requiring customer account information be kept secure and private?", "opts": ["SOX", "HIPAA", "GLBA", "FERPA"], "correct": 2}, {"n": 72, "cat": "Legal", "text": "Which US legislation was enacted to protect shareholders and the public from enterprise accounting errors and fraudulent practices, and expressly names the traits of the CIA triad?", "opts": ["GLBA", "SOX", "HIPAA", "DMCA"], "correct": 1}, {"n": 73, "cat": "Legal", "text": "Which act allows US law enforcement and courts to compel American companies to disclose data stored in foreign data centers, even if disclosure violates local laws?", "opts": ["ECPA", "DMCA", "FedRAMP", "CLOUD Act"], "correct": 3}, {"n": 74, "cat": "Legal", "text": "Which data element type immediately reveals a specific individual, such as a Social Security number, mobile phone number, or home address?", "opts": ["Indirect indicators", "Direct indicators", "Metadata", "Quasi-identifiers"], "correct": 1}, {"n": 75, "cat": "Legal", "text": "Which GDPR principle requires that an individual be informed about PII being gathered or created about them?", "opts": ["Choice", "Notice", "Access", "Integrity"], "correct": 1}, {"n": 76, "cat": "Legal", "text": "Under GDPR, which entity is the cloud customer, and is responsible for any unauthorized disclosure of PII regardless of fault?", "opts": ["Data processor", "Data subject", "Data controller", "Cloud carrier"], "correct": 2}, {"n": 77, "cat": "Legal", "text": "Which ISO standard provides a standardized international model for developing and implementing an organization's overall Information Security Management System (ISMS)?", "opts": ["ISO/IEC 27017", "ISO/IEC 27018", "ISO 27001", "ISO 27050"], "correct": 2}, {"n": 78, "cat": "Legal", "text": "Which ISO/IEC standard focuses specifically on the code of practice and security techniques for processing PII within cloud services?", "opts": ["ISO/IEC 27017:2015", "ISO/IEC 27018:2019", "ISO/IEC 27037:2012", "ISO/IEC 31000:2018"], "correct": 1}, {"n": 79, "cat": "Legal", "text": "Which term describes forward-looking metrics used to warn management of impending negative impact to operations, as opposed to backward-looking performance benchmarks?", "opts": ["KPIs", "KRIs", "SLEs", "AROs"], "correct": 1}, {"n": 80, "cat": "Legal", "text": "Who within an organization dictates the risk appetite, or how much risk the organization is willing to take on?", "opts": ["The security team", "IT operations", "Senior management", "External auditors"], "correct": 2}];
+
+let state = {
+  screen: "start",
+  order: [],
+  answers: {},
+  startTime: null,
+  endTime: null,
+  filter: "all"
+};
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function fmtTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return m + " min " + s + " sec";
+}
+
+function levelForPct(pct){
+  if(pct >= 90) return "EXEMPLARY";
+  if(pct >= 70) return "COMPETENT";
+  if(pct >= 50) return "APPROACHING COMPETENCE";
+  return "NOT YET COMPETENT";
+}
+function levelClass(level){
+  if(level==="EXEMPLARY") return "EXEMPLARY";
+  if(level==="COMPETENT") return "COMPETENT";
+  if(level==="APPROACHING COMPETENCE") return "APPROACHING";
+  return "NOTCOMPETENT";
+}
+
+function render(){
+  const app = document.getElementById("app");
+  if(state.screen === "start") app.innerHTML = renderStart();
+  else if(state.screen === "exam") app.innerHTML = renderExam();
+  else if(state.screen === "results") app.innerHTML = renderResults();
+  attachHandlers();
+}
+
+function renderStart(){
+  return `
+  <div class="card">
+    <h2>Assessment Description</h2>
+    <p class="desc">This 80-question practice exam is built directly from your CCSP study notes, covering
+    architectural concepts, data classification and cloud data security, security responsibilities across
+    deployment models, cloud application security, operations elements and management, and legal, compliance,
+    and risk management topics.</p>
+    <p class="desc"><strong>Number of questions:</strong> 80 &nbsp;|&nbsp; <strong>Format:</strong> multiple choice, one correct answer per question.</p>
+    <ul class="desc">
+      <li>Architectural Concepts &amp; Design — 20% of assessment</li>
+      <li>Data Classification &amp; Cloud Data Security — 20% of assessment</li>
+      <li>Security in the Cloud &amp; Responsibilities — 13% of assessment</li>
+      <li>Cloud Application Security — 16% of assessment</li>
+      <li>Operations Elements &amp; Management — 16% of assessment</li>
+      <li>Legal, Compliance &amp; Risk — 16% of assessment</li>
+    </ul>
+    <button id="startBtn">Start Attempt</button>
+  </div>`;
+}
+
+function renderExam(){
+  const total = state.order.length;
+  const answeredCount = Object.keys(state.answers).length;
+  const pct = Math.round((answeredCount/total)*100);
+  let qHtml = "";
+  state.order.forEach((qIdx, i)=>{
+    const q = QUESTIONS[qIdx];
+    const selected = state.answers[q.n];
+    qHtml += `<div class="card" data-qn="${q.n}">
+      <div class="tag">${COMPETENCIES[q.cat].name}</div>
+      <div class="qtext"><span class="qnum">${i+1}.</span>${q.text}</div>
+      ${q.opts.map((opt,oi)=>`
+        <label class="opt ${selected===oi?'selected':''}">
+          <input type="radio" name="q${q.n}" value="${oi}" ${selected===oi?'checked':''}>
+          ${opt}
+        </label>`).join("")}
+    </div>`;
+  });
+  return `
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="progress-label">${answeredCount} of ${total} answered</div>
+  </div>
+  ${qHtml}
+  <div class="card" style="text-align:center;">
+    <button id="submitBtn">Submit Assessment</button>
+  </div>`;
+}
+
+function computeResults(){
+  let correctTotal = 0;
+  const byCat = {};
+  Object.keys(COMPETENCIES).forEach(c=> byCat[c] = {correct:0, total:0});
+  QUESTIONS.forEach(q=>{
+    byCat[q.cat].total++;
+    const userAns = state.answers[q.n];
+    if(userAns === q.correct){ correctTotal++; byCat[q.cat].correct++; }
+  });
+  const overallPct = Math.round((correctTotal/QUESTIONS.length)*100);
+  return {correctTotal, overallPct, byCat};
+}
+
+function renderResults(){
+  const {correctTotal, overallPct, byCat} = computeResults();
+  const elapsedSec = Math.max(1, Math.round((state.endTime - state.startTime)/1000));
+  const passed = overallPct >= 70;
+
+  let compHtml = "";
+  Object.keys(COMPETENCIES).forEach(c=>{
+    const info = COMPETENCIES[c];
+    const stat = byCat[c];
+    const pct = stat.total ? Math.round((stat.correct/stat.total)*100) : 0;
+    const level = levelForPct(pct);
+    compHtml += `<div class="comp-row">
+      <div class="comp-name">${info.name} <span style="color:var(--muted);font-weight:400;">— ${info.weight}% of assessment</span></div>
+      <div class="comp-pct">${stat.correct}/${stat.total} (${pct}%)</div>
+      <span class="pill ${levelClass(level)}">${level}</span>
+    </div>`;
+  });
+
+  const cats = Object.keys(COMPETENCIES);
+  let filterHtml = `<div class="filterbar">
+    <button data-f="all" class="${state.filter==='all'?'active':''}">All (${QUESTIONS.length})</button>
+    <button data-f="incorrect" class="${state.filter==='incorrect'?'active':''}">Incorrect only</button>
+    ${cats.map(c=>`<button data-f="${c}" class="${state.filter===c?'active':''}">${COMPETENCIES[c].name}</button>`).join("")}
+  </div>`;
+
+  let reviewHtml = "";
+  QUESTIONS.forEach((q,i)=>{
+    const userAns = state.answers[q.n];
+    const isCorrect = userAns === q.correct;
+    if(state.filter === "incorrect" && isCorrect) return;
+    if(state.filter !== "all" && state.filter !== "incorrect" && q.cat !== state.filter) return;
+    reviewHtml += `<div class="answer-block ${isCorrect?'correct':'incorrect'}">
+      <div class="tag">${COMPETENCIES[q.cat].name} — ${isCorrect?'Correct':'Incorrect'}</div>
+      <div class="qtext">${q.n}. ${q.text}</div>
+      ${q.opts.map((opt,oi)=>{
+        let cls = "";
+        if(oi===userAns && oi===q.correct) cls="both";
+        else if(oi===userAns) cls="your";
+        else if(oi===q.correct) cls="correctans";
+        if(!cls) return `<div class="ans-opt">${opt}</div>`;
+        const labelExtra = (oi===userAns && oi!==q.correct) ? " (your answer)" : (oi===q.correct ? " (correct answer)" : "");
+        return `<div class="ans-opt ${cls}">${opt}${labelExtra}</div>`;
+      }).join("")}
+    </div>`;
+  });
+
+  return `
+  <div class="card">
+    <div class="tag">Coaching Report — CCSP Notes Practice Exam</div>
+    <h2 style="margin:6px 0 2px;">Attempt ${state.attemptNum || 1} Results</h2>
+    <p class="desc">Time used: ${fmtTime(elapsedSec)} &nbsp;|&nbsp; # of Questions: ${QUESTIONS.length}</p>
+    <div style="display:flex;align-items:baseline;gap:16px;margin:14px 0;">
+      <div class="summary-score">${overallPct}%</div>
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;" class="${passed?'status-pass':'status-fail'}">${passed?'PASSED':'NOT PASSED'}</div>
+        <div class="desc">${correctTotal} of ${QUESTIONS.length} correct</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Competencies and Topics</h3>
+    ${compHtml}
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Question Review</h3>
+    ${filterHtml}
+    ${reviewHtml || '<p class="desc">No questions match this filter.</p>'}
+  </div>
+  <div class="card" style="text-align:center;">
+    <button class="secondary" id="retakeBtn">Retake Assessment</button>
+  </div>`;
+}
+
+function attachHandlers(){
+  const startBtn = document.getElementById("startBtn");
+  if(startBtn){
+    startBtn.onclick = ()=>{
+      state.order = shuffle(QUESTIONS.map((q,i)=>i));
+      state.answers = {};
+      state.startTime = Date.now();
+      state.screen = "exam";
+      render();
+      window.scrollTo(0,0);
+    };
+  }
+  document.querySelectorAll('.card[data-qn] input[type=radio]').forEach(inp=>{
+    inp.onchange = (e)=>{
+      const qn = parseInt(e.target.closest('.card').dataset.qn,10);
+      state.answers[qn] = parseInt(e.target.value,10);
+      render();
+    };
+  });
+  const submitBtn = document.getElementById("submitBtn");
+  if(submitBtn){
+    submitBtn.onclick = ()=>{
+      const total = QUESTIONS.length;
+      const answered = Object.keys(state.answers).length;
+      if(answered < total){
+        if(!confirm(`You have answered ${answered} of ${total} questions. Submit anyway?`)) return;
+      }
+      state.endTime = Date.now();
+      state.attemptNum = (state.attemptNum||0) + 1;
+      state.screen = "results";
+      state.filter = "all";
+      render();
+      window.scrollTo(0,0);
+    };
+  }
+  const retakeBtn = document.getElementById("retakeBtn");
+  if(retakeBtn){
+    retakeBtn.onclick = ()=>{
+      state.screen = "start";
+      render();
+      window.scrollTo(0,0);
+    };
+  }
+  document.querySelectorAll('.filterbar button').forEach(b=>{
+    b.onclick = ()=>{
+      state.filter = b.dataset.f;
+      render();
+    };
+  });
+}
+
+render();
+</script>
+</body>
+</html>
