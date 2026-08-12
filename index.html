@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pre-Assessment: Managing Cloud Security (PAZM)</title>
+<style>
+:root{
+  --navy:#1a2b4c; --blue:#0057a3; --green:#1e824c; --amber:#c98e00; --red:#b3261e;
+  --bg:#f4f6f9; --card:#ffffff; --border:#d9dee5; --text:#1c2530; --muted:#5a6472;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);}
+header{background:var(--navy);color:#fff;padding:18px 24px;}
+header h1{margin:0;font-size:1.25rem;}
+header p{margin:4px 0 0;font-size:.85rem;color:#c9d3e0;}
+.container{max-width:860px;margin:0 auto;padding:24px 16px 60px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:22px 24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+button{cursor:pointer;font-size:.95rem;border:none;border-radius:6px;padding:10px 20px;background:var(--blue);color:#fff;font-weight:600;}
+button:hover{background:#00427d;}
+button.secondary{background:#fff;color:var(--blue);border:1px solid var(--blue);}
+button.secondary:hover{background:#eef4fb;}
+button:disabled{background:#aab4bf;cursor:not-allowed;}
+.qnum{font-weight:700;color:var(--blue);margin-right:6px;}
+.qtext{font-weight:600;margin-bottom:10px;line-height:1.4;}
+.opt{display:block;padding:9px 12px;margin:6px 0;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:.15s;}
+.opt:hover{background:#f0f4f9;}
+.opt input{margin-right:10px;}
+.opt.selected{border-color:var(--blue);background:#eaf1fb;}
+.progress-wrap{position:sticky;top:0;background:var(--bg);padding:10px 0 6px;z-index:10;}
+.progress-bar{height:8px;background:#dde3ea;border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--blue);width:0%;transition:width .2s;}
+.progress-label{font-size:.8rem;color:var(--muted);margin-top:4px;text-align:right;}
+.nav-row{display:flex;justify-content:space-between;margin-top:18px;}
+.pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.72rem;font-weight:700;color:#fff;}
+.pill.EXEMPLARY{background:var(--green);}
+.pill.COMPETENT{background:var(--blue);}
+.pill.APPROACHING{background:var(--amber);}
+.pill.NOTCOMPETENT{background:var(--red);}
+.comp-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.comp-row:last-child{border-bottom:none;}
+.comp-name{flex:1;font-weight:600;font-size:.92rem;}
+.comp-pct{font-size:.82rem;color:var(--muted);margin-right:10px;}
+.answer-block{border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:14px;}
+.answer-block.correct{border-left:5px solid var(--green);}
+.answer-block.incorrect{border-left:5px solid var(--red);}
+.ans-opt{padding:6px 10px;border-radius:5px;margin:3px 0;font-size:.9rem;}
+.ans-opt.your{background:#fde8e8;border:1px solid var(--red);}
+.ans-opt.correctans{background:#e5f5ec;border:1px solid var(--green);font-weight:600;}
+.ans-opt.both{background:#e5f5ec;border:1px solid var(--green);font-weight:600;}
+.tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+.summary-score{font-size:2.4rem;font-weight:800;color:var(--navy);}
+.status-pass{color:var(--green);}
+.status-fail{color:var(--red);}
+.hidden{display:none;}
+.desc{font-size:.92rem;line-height:1.5;color:var(--muted);}
+.filterbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filterbar button{padding:6px 14px;font-size:.8rem;background:#fff;color:var(--blue);border:1px solid var(--blue);}
+.filterbar button.active{background:var(--blue);color:#fff;}
+footer{text-align:center;color:var(--muted);font-size:.78rem;padding:20px 0;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pre-Assessment: Managing Cloud Security (PAZM)</h1>
+  <p>80-question practice exam &middot; modeled on the official Coaching Report / PA Results format</p>
+</header>
+<div class="container" id="app"></div>
+<footer>Practice exam generated for personal study use. Not affiliated with WGU.</footer>
+
+<script>
+const COMPETENCIES = {
+  "SafeCD":   {name:"Safeguards Cloud Data", weight:16},
+  "ImplSS":   {name:"Implements Secure Solutions", weight:20},
+  "ImplOps":  {name:"Implements Operations", weight:18},
+  "Policies": {name:"Identifies Security Policies and Procedures", weight:18},
+  "Risk":     {name:"Conducts Risk Management", weight:16},
+  "Legal":    {name:"Identifies Legal, Compliance, and Ethical Concerns", weight:13}
+};
+
+const QUESTIONS = [{"n": 1, "cat": "SafeCD", "text": "Which phase of the cloud data life cycle requires adherence to export and import restrictions, including Export Administration Regulations (EAR) and the Wassenaar Arrangement?", "opts": ["Create", "Share", "Use", "Destroy"], "correct": 1}, {"n": 2, "cat": "ImplSS", "text": "Why is the striping with parity method of storing data used in most redundant array of independent disks (RAID) configurations?", "opts": ["It prevents outages and attacks from occurring in a cloud environment.", "It prevents data from being recovered once it is destroyed using crypto-shredding.", "It allows data to be safely distributed and stored in a common centralized location.", "It allows efficient data recovery as even if one drive fails, other drives fill in the missing data."], "correct": 3}, {"n": 3, "cat": "SafeCD", "text": "What is the purpose of egress monitoring tools?", "opts": ["They are used to convert a given set of data or information into a different value.", "They are used to prevent data from going outside the control of an organization.", "They are used to create data during the Create phase of the cloud data life cycle.", "They are used to remove data during the Destroy phase of the cloud data life cycle."], "correct": 1}, {"n": 4, "cat": "SafeCD", "text": "A company is looking at different types of cloud storage options. One threat is the possibility of losing forensic artifacts in the event of an incident response investigation. Which type of cloud storage has the highest risk of losing forensic artifacts in the event of an incident response investigation?", "opts": ["File-based", "Long-term", "Block", "Ephemeral"], "correct": 3}, {"n": 5, "cat": "Legal", "text": "A manager is made aware of a customer complaint about how an application developed by the company collects personal and environmental information from the devices it is installed on. Which document should the manager refer to in order to determine if the company has properly disclosed information about what data it collects from this application's users?", "opts": ["Retention policy", "Breach notification", "Privacy notice", "Denial of service"], "correct": 2}, {"n": 6, "cat": "SafeCD", "text": "An organization needs to store passwords in a database securely. The data should not be available to system administrators. Which technique should the organization use?", "opts": ["Encryption", "Hashing", "Encoding", "Masking"], "correct": 1}, {"n": 7, "cat": "SafeCD", "text": "A company is looking to ensure that the names of individuals in its data in the cloud are not revealed in the event of a data breach, as the data is sensitive and classified. Which data masking technique should the company use to prevent attackers from identifying individuals in the event of a data breach?", "opts": ["Crypto-shredding", "Degaussing", "Anonymization", "Randomization"], "correct": 2}, {"n": 8, "cat": "SafeCD", "text": "An organization needs to quickly identify the document owner in a shared network folder. Which technique should the organization use to meet this goal?", "opts": ["Labeling", "Classification", "Mapping", "Categorization"], "correct": 0}, {"n": 9, "cat": "SafeCD", "text": "An organization plans to introduce a new data standard and wants to ensure that system inventory data will be efficiently discovered and processed. Which type of data should the organization use to meet this goal?", "opts": ["Structured", "Semi-structured", "Annotated", "Mapped"], "correct": 0}, {"n": 10, "cat": "SafeCD", "text": "An organization implemented an information rights management (IRM) solution to prevent critical data from being copied without permission and a cloud backup solution to ensure that the critical data is protected from storage failures. Which IRM challenge will the organization need to address?", "opts": ["Jurisdictional conflicts", "Agent conflicts", "Replication restrictions", "Execution restrictions"], "correct": 2}, {"n": 11, "cat": "SafeCD", "text": "A data center engineer is tasked with the destruction of data on solid-state drives (SSDs). The engineer must ensure that the data is not able to be retrieved. Which data destruction action should the engineer take to meet this goal?", "opts": ["Overwriting", "Crypto-shredding", "Wiping", "Degaussing"], "correct": 1}, {"n": 12, "cat": "ImplOps", "text": "An organization wants to gather and interpret logs from its cloud environment. Which system should the organization use for this task?", "opts": ["Simple Network Management Protocol (SNMP)", "Security Information and Event Management (SIEM)", "Business Process Management (BPM)", "Distributed System Management (DSM)"], "correct": 1}, {"n": 13, "cat": "ImplOps", "text": "An organization with a Security Information and Event Management (SIEM) system wants to minimize errors or missed issues due to human log analysis. Which SIEM policy should the organization use in this case?", "opts": ["Automated analysis of metadata", "Automated analysis of data sets", "Manually generated analysis of data sets", "Manually generated analysis of metadata"], "correct": 1}, {"n": 14, "cat": "ImplSS", "text": "Which software type allows multiple operating systems to run on the same physical server in a virtualized environment?", "opts": ["Hypervisor", "Container", "Quantum computing", "Blockchain technology"], "correct": 0}, {"n": 15, "cat": "ImplSS", "text": "What is the name of the process of automatically provisioning, configuring, and managing virtual machines and other resources in a virtualized environment?", "opts": ["Continuous deployment", "Orchestration", "Programmability", "Continuous integration"], "correct": 1}, {"n": 16, "cat": "ImplSS", "text": "Which cloud computing characteristic allows customers to manage their utilization by only paying for the resources used?", "opts": ["Metered service", "Broad network access", "Rapid elasticity", "On-demand self-service"], "correct": 0}, {"n": 17, "cat": "ImplSS", "text": "Which cloud deployment model allows customers to take advantage of service and price differences from two or more cloud vendors?", "opts": ["Public cloud", "Hybrid cloud", "Multi-cloud", "Private cloud"], "correct": 2}, {"n": 18, "cat": "Risk", "text": "Which cloud consideration refers to the ability of the infrastructure to withstand disruptive events?", "opts": ["Governance", "Availability", "Resiliency", "Maintenance"], "correct": 2}, {"n": 19, "cat": "ImplSS", "text": "Which technology is used to protect the confidentiality of data from on-path attacks?", "opts": ["Bring your own device (BYOD)", "Data loss prevention (DLP)", "Information Rights Management (IRM)", "Transport Layer Security (TLS)"], "correct": 3}, {"n": 20, "cat": "SafeCD", "text": "Which technology allows cryptographic secrets to be held in a secure way so that they can be recovered by parties who have authorization?", "opts": ["Revocation", "Key distribution", "Key escrow", "Lifetime"], "correct": 2}, {"n": 21, "cat": "ImplSS", "text": "Which safety control acts as a virtual firewall in cloud environments?", "opts": ["Traffic inspection", "Zero trust", "Network security group", "Geofencing"], "correct": 2}, {"n": 22, "cat": "ImplSS", "text": "An organization with a single headquarters building in New York City wants to secure its cloud infrastructure so that only users at its offices can administer its cloud resources. Which architectural concept should the organization implement?", "opts": ["Geofencing", "Two-factor authentication", "Data loss prevention", "Antivirus software"], "correct": 0}, {"n": 23, "cat": "Risk", "text": "Which business continuity/disaster recovery (BC/DR) term refers to a secure container that contains all the necessary documentation and resources needed to conduct a proper BC/DR response action?", "opts": ["Configuration management", "Toolkit", "Process automation", "Standard"], "correct": 1}, {"n": 24, "cat": "Risk", "text": "An organization is planning to store its production data in a public cloud service. While researching the service, the organization discovers that its data will be stored in a proprietary data format that cannot be read by other cloud services. Which cloud risk does this represent?", "opts": ["Regulatory failure", "Inadvertent disclosure", "Vendor lock-in", "Data seizure"], "correct": 2}, {"n": 25, "cat": "Risk", "text": "A company configures a backup solution that will automatically sync the data between the services of multiple cloud service providers to prevent data redundancy. One concern is that the different service offerings may not have the same level of data protection and may not allow direct syncing between the providers. Which architectural concept addresses this concern?", "opts": ["Interoperability", "Availability", "Resiliency", "Scalability"], "correct": 0}, {"n": 26, "cat": "ImplSS", "text": "Which design pillar represents the ability of a workload to execute its intended function accurately and consistently when it is expected to?", "opts": ["Security", "Operational excellence", "Cost optimization", "Reliability"], "correct": 3}, {"n": 27, "cat": "SafeCD", "text": "A cloud customer wants to store application programming interface (API) tokens for their applications so they can be accessed from anywhere. Which cloud provider service should the customer use?", "opts": ["Secrets management", "Multifactor authentication", "Single sign-on", "Federated identity"], "correct": 0}, {"n": 28, "cat": "Legal", "text": "The Department of Justice (DOJ) assesses options for a new cloud-hosted collaboration solution. What should it use to ensure that the vendors are compliant with the governmental regulations for data management in the United States?", "opts": ["Business partnership agreement (BPA)", "Federal Risk and Authorization Management Program (FedRAMP)", "European Union Agency for Network and Information Security (ENISA)", "Nondisclosure agreement (NDA)"], "correct": 1}, {"n": 29, "cat": "Legal", "text": "A European Union (EU) citizen contacts a company doing business in the EU, claiming that its data processing activities are out of compliance with the General Data Protection Regulation (GDPR). The citizen demands that the company stops processing their personal data. What must the company do if it wishes to continue processing this personal data?", "opts": ["File an appeal with the Court of Justice of the European Union (CJEU) within 60 days and continue processing the data", "Demonstrate that this data processing is a necessary business requirement", "Demonstrate that this data processing is authorized under approved standards", "File an appeal with the Court of Justice of the European Union (CJEU) within 60 days and stop processing the data"], "correct": 1}, {"n": 30, "cat": "ImplSS", "text": "What is used to allow additional functionality such as improved networking or video output for a guest operating system by connecting to an underlying host's hardware?", "opts": ["Application toolsets", "Virtualization toolsets", "Memory controllers", "Flash controllers"], "correct": 1}, {"n": 31, "cat": "ImplSS", "text": "Which concept denotes an advantage of virtualized environments that enable them to achieve high availability?", "opts": ["Hardware abstraction", "Containerization", "Maintenance mode", "Alerting"], "correct": 0}, {"n": 32, "cat": "ImplSS", "text": "Which storage architecture contains nodes that are logically connected rather than physically connected?", "opts": ["Tightly coupled clusters", "Data dispersion", "Loosely coupled clusters", "Archival storage"], "correct": 2}, {"n": 33, "cat": "ImplSS", "text": "Which purpose does an intrusion prevention system (IPS) serve when compared to an intrusion detection system (IDS)?", "opts": ["An IPS detects and stops malicious traffic, while an IDS detects and alerts about malicious traffic.", "An IPS detects and alerts about malicious traffic, while an IDS detects and stops malicious traffic.", "An IDS tells an IPS what malicious traffic it detects, and then the IPS blocks that traffic.", "An IPS tells an IDS what malicious traffic it detects, and then the IDS blocks that traffic."], "correct": 0}, {"n": 34, "cat": "ImplOps", "text": "Which part of a network should a security information and event management (SIEM) suite use to ensure network devices in a software-defined network are properly forwarding traffic?", "opts": ["Data plane", "Debug log", "Error log", "Control plane"], "correct": 3}, {"n": 35, "cat": "ImplOps", "text": "An analyst needs to scan hosts for misconfigurations and known security threats that could lead to a security incident. Which type of scanner will allow the analyst to check for these types of issues?", "opts": ["Protocol", "Address", "Port", "Vulnerability"], "correct": 3}, {"n": 36, "cat": "ImplOps", "text": "An organization identified the need to improve the resiliency of a critical IT service to ensure access for its customers. Which information technology service management (ITSM) process should be implemented to ensure the organization meets this goal?", "opts": ["Availability management", "Capacity management", "Incident management", "Security management"], "correct": 0}, {"n": 37, "cat": "Risk", "text": "An organization lost connectivity to one of its data centers because of a power outage. What is used to measure the return to operational capability after the loss of connectivity?", "opts": ["Recovery time objective (RTO)", "Maximum tolerable downtime (MTD)", "Recovery point objective (RPO)", "Annualized loss expectancy (ALE)"], "correct": 0}, {"n": 38, "cat": "ImplOps", "text": "Which type of management focuses on arranging all the elements needed to deploy new software, including QA testing and staging, before the software enters active maintenance?", "opts": ["Availability management (AM)", "Release management (RM)", "Incident management (IM)", "Problem management (PM)"], "correct": 1}, {"n": 39, "cat": "Legal", "text": "A security analyst is tasked with collecting evidence related to a data breach involving monetary theft. Which action should the security analyst take when accessing the breached system?", "opts": ["Create an unencrypted backup of all data", "Create an encrypted backup of all data", "Detail and replicate all activities taken", "Document and record all activities taken"], "correct": 3}, {"n": 40, "cat": "Legal", "text": "During an investigation, government agents asked a security professional to collect the records stored in a database and present them to the court. Which process should the security professional use to identify and obtain that information?", "opts": ["Electronic communication", "Error correcting code (ECC) memory", "Cyclic redundancy check (CRC)", "Electronic discovery"], "correct": 3}, {"n": 41, "cat": "Policies", "text": "The service at a cloud provider has been interrupted. Which group should this cloud provider contact with information about the expected window for which the services will be down as per a contractual agreement?", "opts": ["Customers", "Regulators", "Executives", "Employees"], "correct": 0}, {"n": 42, "cat": "Policies", "text": "An online store has declared a disaster situation because of a large storm in the area of its primary cloud data center location. The emergency plan has allowed the store to remain online and accept payments, but it has fallen out of compliance with its Payment Card Industry Data Security Standard (PCI DSS) practices. Which party should the store keep apprised of ongoing developments and the potential solutions being considered?", "opts": ["Customers", "Developers", "Consumers", "Regulators"], "correct": 3}, {"n": 43, "cat": "Risk", "text": "Which type of communication channel should be established between parties in a supply chain to be used in a disaster situation?", "opts": ["Back", "Landline", "Satellite", "Secondary"], "correct": 2}, {"n": 44, "cat": "Policies", "text": "An organization's engineers recently attended a training session designed to raise awareness of the dangers of using insecure direct object identifiers to view another user's account information. Which Open Web Application Security Project (OWASP) Top 10 vulnerability category did their training cover?", "opts": ["Vulnerable and outdated components", "Identification and authentication failures", "Broken access control", "Security logging failures"], "correct": 2}, {"n": 45, "cat": "Policies", "text": "An organization's engineers recently attended a training session that raised their awareness of the dangers of using weak algorithms or protocols for data security. Which Open Web Application Security Project (OWASP) Top 10 vulnerability category did their training cover?", "opts": ["Insecure design", "Hashing", "Sandboxing", "Cryptographic failures"], "correct": 3}, {"n": 46, "cat": "Policies", "text": "A company plans to deploy a new application. Before the deployment, the company hires an IT security consultant to perform a zero-knowledge test to access the application as an external hacker would. Which testing technique applies to the work the consultant is performing?", "opts": ["Black box", "White box", "Abuse case", "Static application"], "correct": 0}, {"n": 47, "cat": "Policies", "text": "Which concept refers to multiple teams and roles within an organization that perform testing on code from end to end to ensure that the code meets all standards and requirements?", "opts": ["Quality assurance", "Identity assurance", "Full tests", "Tabletop tests"], "correct": 0}, {"n": 48, "cat": "Policies", "text": "What is the purpose of implementing rate limiting in application programming interface (API) security?", "opts": ["To reduce API response time", "To block unauthorized API access", "To prevent API overuse", "To increase API usage"], "correct": 2}, {"n": 49, "cat": "ImplOps", "text": "An organization wants to ensure that untested software updates provided by a third-party vendor are not run in its mission-critical environment. What should the organization use in this scenario?", "opts": ["Automatic updates", "Update notifications", "Update documentation", "Manual updates"], "correct": 3}, {"n": 50, "cat": "Policies", "text": "Which software development methodology is sequential, with each phase followed by the next phase and with no overlap between the phases?", "opts": ["Scrum", "Lean", "Agile", "Waterfall"], "correct": 3}, {"n": 51, "cat": "Policies", "text": "Which phase of software design includes gathering customer input to determine a system's desired functionality?", "opts": ["Ongoing operations", "Decommissioning", "Planning", "Requirements definition"], "correct": 3}, {"n": 52, "cat": "Policies", "text": "Which technology is used to prevent cross-site request forgery (CSRF) attacks?", "opts": ["Encoding", "Tokens", "Multifactor authentication (MFA)", "Identity-based encryption (IBE)"], "correct": 1}, {"n": 53, "cat": "Policies", "text": "A project manager is working on a new software project for a customer. The project manager works closely with the customer to get input on the desired features and ranks them based on how critical they are for the project. Which phase of the software development life cycle (SDLC) is the project manager working on?", "opts": ["Planning", "Requirements definition", "Development", "Ongoing operations"], "correct": 1}, {"n": 54, "cat": "Policies", "text": "Which web application firewall (WAF) feature protects the application servers behind it from systems sending requests?", "opts": ["Reverse proxy", "User-based filters", "Content-based filters", "Reverse IP lookup"], "correct": 0}, {"n": 55, "cat": "SafeCD", "text": "Which scheme would provide protection if an entire physical solid-state drive was lost or stolen?", "opts": ["File-level encryption", "Transport Layer Security (TLS)", "Secure Socket Layer (SSL)", "Full-disk encryption"], "correct": 3}, {"n": 56, "cat": "SafeCD", "text": "A small organization adopts a strategy to ensure that the cryptographic keys it uses in its cloud environment are securely stored and handled. Which cost-effective third-party service should the organization leverage for key administration in the given scenario?", "opts": ["Data loss prevention (DLP)", "Cloud access security broker (CASB)", "Identity provider (IdP)", "Security information and event management (SIEM)"], "correct": 1}, {"n": 57, "cat": "SafeCD", "text": "An organization started the transition to using a public cloud service for a customer-facing application. The organization's security team has concerns about the application programming interface (API) tokens being lost or exposed to malicious actors. Which service do cloud providers offer that the organization should leverage to administer its API tokens?", "opts": ["Secrets management", "Output encoding", "Gateway", "Sandbox"], "correct": 0}, {"n": 58, "cat": "ImplOps", "text": "What is the benefit of virtualization management tools with respect to the management plane?", "opts": ["They provide insights into current bandwidth needs and traffic types.", "They allow more effective handling of resource demands.", "They protect cloud resources and data from threats and vulnerabilities.", "They enable the backup of data and applications."], "correct": 1}, {"n": 59, "cat": "ImplOps", "text": "Which component provides improved availability and path redundancy?", "opts": ["Network interface card (NIC) teaming", "Virtual local area network (VLAN)", "Network access control list (NACL)", "Network security group (NSG)"], "correct": 0}, {"n": 60, "cat": "ImplSS", "text": "After an internal audit, an organization determined that its cloud deployment may be vulnerable to threats from external attackers. What should the organization implement to mitigate this risk?", "opts": ["Hardened virtual machines with strong access controls", "Mandatory vacation and job rotation for employees", "Real-time video surveillance monitoring of physical access to devices", "USB-blocking software to prevent unauthorized devices from being used"], "correct": 0}, {"n": 61, "cat": "Risk", "text": "A group of colleges decided to pool their resources to create a community cloud. Which risk is associated with this type of cloud deployment?", "opts": ["Proprietary data formats preventing data conversion", "A lack of compliance with relevant regulations", "Shared access and control mechanisms between members", "Decreased visibility of cloud performance and resource usage"], "correct": 2}, {"n": 62, "cat": "Risk", "text": "An organization believes that a man-in-the-middle attack is possible but unlikely to occur. However, if a successful attack occurs, the consequences will be serious. The cost estimate for reducing the risk of such an attack is much more than the organization wishes to pay. Which factor will determine whether the organization decides to pay the amount to mitigate the risk of an attack?", "opts": ["Risk appetite", "Risk management", "Inherent risk", "Residual risk"], "correct": 0}, {"n": 63, "cat": "ImplOps", "text": "Which tier of service is provided by a data center that is designed to have independent and physically isolated systems, multiple distribution paths, and fault tolerance for components?", "opts": ["Tier 1", "Tier 2", "Tier 3", "Tier 4"], "correct": 3}, {"n": 64, "cat": "ImplOps", "text": "Which concept focuses on balancing virtual machines across clusters to ensure reliable and consistent performance?", "opts": ["Ephemeral computing", "Distinct physical paths", "Distributed resource scheduling", "High availability"], "correct": 2}, {"n": 65, "cat": "ImplOps", "text": "An organization exclusively uses Microsoft software and prefers to use tools that run natively on Windows whenever possible. Which tool should this organization use to provide remote access to machines over an encrypted channel?", "opts": ["Remote Desktop Protocol (RDP)", "Secure Shell (SSH)", "Virtual clients", "Secure terminal access"], "correct": 0}, {"n": 66, "cat": "ImplOps", "text": "An organization opens an office with a reception area. Visitors are required to sign in at the reception and collect a visitor's badge, which turns from white to red after eight hours. Which security concept is the organization employing?", "opts": ["Controlled entry point", "Monitoring systems", "Vehicular approach controls", "Fire systems"], "correct": 0}, {"n": 67, "cat": "ImplSS", "text": "An organization wants to include a second factor of authentication in its authentication, authorization, and accounting scheme for its cloud environment. It wants to ensure that the additional authentication mechanism will not be compromised if an employee's laptop or smartphone is compromised. Which type of authentication token will meet the organization's requirements?", "opts": ["Text messages with one-time passwords", "Applications such as password managers", "Hardware such as key fob devices", "Caller ID authentication"], "correct": 2}, {"n": 68, "cat": "ImplSS", "text": "An organization deploying a greenfield cloud-based system wants to validate users' identities and access before they are allowed to interact with data. Which scheme should the organization leverage to ensure that users are properly validated?", "opts": ["Security groups", "Zero trust", "Bastion hosts", "Traffic inspection"], "correct": 1}, {"n": 69, "cat": "Risk", "text": "An organization is taking part in a disaster recovery (DR) exercise that simulates a natural disaster. The key players are performing minimal actions that test the call tree to ensure that all the contact information is up to date. Which type of testing is the organization performing?", "opts": ["Full", "Dry run", "Split", "Abuse case"], "correct": 1}, {"n": 70, "cat": "Risk", "text": "After a severe storm, the local power grid used by an organization's primary European data center was damaged and could no longer provide the necessary power to keep the services running. Management has established that this event does not meet the definition of a disaster but is a business continuity impacting event since a failover site can temporarily bear the load. What should the organization leverage to return operations to the data center?", "opts": ["Uninterruptible power supply (UPS)", "Redundant array of independent disks (RAID)", "Generators", "Archives"], "correct": 2}, {"n": 71, "cat": "Legal", "text": "Which legal requirement mandates companies in the United States to provide federal officials with data even if the data is not stored in the United States and disclosure of the data is illegal under the laws where it is stored?", "opts": ["The Sarbanes-Oxley (SOX) Act", "The General Data Protection Regulation (GDPR)", "The Gramm-Leach-Bliley Act (GLBA)", "The Clarifying Lawful Overseas Use of Data (CLOUD) Act"], "correct": 3}, {"n": 72, "cat": "Legal", "text": "Which process describes the tracking and monitoring of evidence, including who had access and what controls were used, from the time it is classified and gathered for evidential purposes until the time it is delivered to a court or law enforcement officials?", "opts": ["Audit", "Chain of custody", "Electronic discovery", "Forensic imaging"], "correct": 1}, {"n": 73, "cat": "Legal", "text": "The General Data Protection Regulation (GDPR) provides data subjects with various rights related to privacy. What do organizations need to do in order to acquire and use personal information under GDPR?", "opts": ["Give the data subject notice of the data use", "Have the data subject opt in for the data use", "Allow the data subject to opt out of the data use", "Get the data subject to sign an agreement for the data use"], "correct": 1}, {"n": 74, "cat": "Legal", "text": "An organization has devised a new use for the personal data that it stores about its customers. What should the organization do in this situation according to the Generally Accepted Privacy Principles (GAPP)?", "opts": ["Notify users once the updated data processing is in place", "Obtain additional consent before using personal data in a different way", "Take no further action as the users have already consented to data processing", "Remove the data processing clause from its policy to avoid a conflict"], "correct": 1}, {"n": 75, "cat": "Risk", "text": "Which type of analysis compares a control analysis against a baseline standard?", "opts": ["Privacy impact analysis", "Gap analysis", "Risk analysis", "Business impact analysis"], "correct": 1}, {"n": 76, "cat": "Legal", "text": "Which type of statement issued by an auditor indicates that an organization did not disclose enough information to perform a fair audit?", "opts": ["Income", "Adverse opinion", "Compliance", "Scope limitation"], "correct": 3}, {"n": 77, "cat": "Risk", "text": "Which risk management strategy involves changing business practices to eliminate the potential of an enterprise risk?", "opts": ["Acceptance", "Transference", "Mitigation", "Avoidance"], "correct": 3}, {"n": 78, "cat": "Risk", "text": "Which risk management strategy involves continuing business operations as normal after being made aware of an enterprise risk?", "opts": ["Transference", "Acceptance", "Avoidance", "Mitigation"], "correct": 1}, {"n": 79, "cat": "Policies", "text": "Which document specifies the service guarantees a vendor will provide and the remedies available if the vendor fails to adhere to them?", "opts": ["Master service agreement (MSA)", "Nondisclosure agreement (NDA)", "Business partnership agreement (BPA)", "Service level agreement (SLA)"], "correct": 3}, {"n": 80, "cat": "Policies", "text": "Which document provides a contract for a vendor's work for an organization over an extended period and usually includes security requirements?", "opts": ["Master service agreement (MSA)", "Service level agreement (SLA)", "Nondisclosure agreement (NDA)", "Business partnership agreement (BPA)"], "correct": 0}];
+
+let state = {
+  screen: "start",
+  order: [],
+  answers: {},
+  startTime: null,
+  endTime: null,
+  filter: "all"
+};
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function fmtTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return m + " min " + s + " sec";
+}
+
+function levelForPct(pct){
+  if(pct >= 90) return "EXEMPLARY";
+  if(pct >= 70) return "COMPETENT";
+  if(pct >= 50) return "APPROACHING COMPETENCE";
+  return "NOT YET COMPETENT";
+}
+function levelClass(level){
+  if(level==="EXEMPLARY") return "EXEMPLARY";
+  if(level==="COMPETENT") return "COMPETENT";
+  if(level==="APPROACHING COMPETENCE") return "APPROACHING";
+  return "NOTCOMPETENT";
+}
+
+function render(){
+  const app = document.getElementById("app");
+  if(state.screen === "start") app.innerHTML = renderStart();
+  else if(state.screen === "exam") app.innerHTML = renderExam();
+  else if(state.screen === "results") app.innerHTML = renderResults();
+  attachHandlers();
+}
+
+function renderStart(){
+  return `
+  <div class="card">
+    <h2>Assessment Description</h2>
+    <p class="desc">Managing Cloud Security prepares learners to safeguard cloud data with identity and access
+    management and to implement secure solutions in cloud service models. Learners will be introduced to skills
+    in identifying security policies and procedures for cloud applications and in implementing operational
+    capabilities, procedures, and training in relation to organizational needs. Learners will also gain skills in
+    conducting risk analysis and risk management in alignment with disaster recovery and business continuity plans
+    and in identifying legal, compliance, and ethical concerns.</p>
+    <p class="desc"><strong>Number of questions:</strong> 80 &nbsp;|&nbsp; <strong>Format:</strong> multiple choice, one correct answer per question.</p>
+    <ul class="desc">
+      <li>Safeguards Cloud Data — 16% of assessment</li>
+      <li>Implements Secure Solutions — 20% of assessment</li>
+      <li>Implements Operations — 18% of assessment</li>
+      <li>Identifies Security Policies and Procedures — 18% of assessment</li>
+      <li>Conducts Risk Management — 16% of assessment</li>
+      <li>Identifies Legal, Compliance, and Ethical Concerns — 13% of assessment</li>
+    </ul>
+    <button id="startBtn">Start Attempt</button>
+  </div>`;
+}
+
+function renderExam(){
+  const total = state.order.length;
+  const answeredCount = Object.keys(state.answers).length;
+  const pct = Math.round((answeredCount/total)*100);
+  let qHtml = "";
+  state.order.forEach((qIdx, i)=>{
+    const q = QUESTIONS[qIdx];
+    const selected = state.answers[q.n];
+    qHtml += `<div class="card" data-qn="${q.n}">
+      <div class="tag">${COMPETENCIES[q.cat].name}</div>
+      <div class="qtext"><span class="qnum">${i+1}.</span>${q.text}</div>
+      ${q.opts.map((opt,oi)=>`
+        <label class="opt ${selected===oi?'selected':''}">
+          <input type="radio" name="q${q.n}" value="${oi}" ${selected===oi?'checked':''}>
+          ${opt}
+        </label>`).join("")}
+    </div>`;
+  });
+  return `
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="progress-label">${answeredCount} of ${total} answered</div>
+  </div>
+  ${qHtml}
+  <div class="card" style="text-align:center;">
+    <button id="submitBtn">Submit Assessment</button>
+  </div>`;
+}
+
+function computeResults(){
+  let correctTotal = 0;
+  const byCat = {};
+  Object.keys(COMPETENCIES).forEach(c=> byCat[c] = {correct:0, total:0});
+  QUESTIONS.forEach(q=>{
+    byCat[q.cat].total++;
+    const userAns = state.answers[q.n];
+    if(userAns === q.correct){ correctTotal++; byCat[q.cat].correct++; }
+  });
+  const overallPct = Math.round((correctTotal/QUESTIONS.length)*100);
+  return {correctTotal, overallPct, byCat};
+}
+
+function renderResults(){
+  const {correctTotal, overallPct, byCat} = computeResults();
+  const elapsedSec = Math.max(1, Math.round((state.endTime - state.startTime)/1000));
+  const passed = overallPct >= 70;
+
+  let compHtml = "";
+  Object.keys(COMPETENCIES).forEach(c=>{
+    const info = COMPETENCIES[c];
+    const stat = byCat[c];
+    const pct = stat.total ? Math.round((stat.correct/stat.total)*100) : 0;
+    const level = levelForPct(pct);
+    compHtml += `<div class="comp-row">
+      <div class="comp-name">${info.name} <span style="color:var(--muted);font-weight:400;">— ${info.weight}% of assessment</span></div>
+      <div class="comp-pct">${stat.correct}/${stat.total} (${pct}%)</div>
+      <span class="pill ${levelClass(level)}">${level}</span>
+    </div>`;
+  });
+
+  const cats = Object.keys(COMPETENCIES);
+  let filterHtml = `<div class="filterbar">
+    <button data-f="all" class="${state.filter==='all'?'active':''}">All (${QUESTIONS.length})</button>
+    <button data-f="incorrect" class="${state.filter==='incorrect'?'active':''}">Incorrect only</button>
+    ${cats.map(c=>`<button data-f="${c}" class="${state.filter===c?'active':''}">${COMPETENCIES[c].name}</button>`).join("")}
+  </div>`;
+
+  let reviewHtml = "";
+  QUESTIONS.forEach((q,i)=>{
+    const userAns = state.answers[q.n];
+    const isCorrect = userAns === q.correct;
+    if(state.filter === "incorrect" && isCorrect) return;
+    if(state.filter !== "all" && state.filter !== "incorrect" && q.cat !== state.filter) return;
+    reviewHtml += `<div class="answer-block ${isCorrect?'correct':'incorrect'}">
+      <div class="tag">${COMPETENCIES[q.cat].name} — ${isCorrect?'Correct':'Incorrect'}</div>
+      <div class="qtext">${q.n}. ${q.text}</div>
+      ${q.opts.map((opt,oi)=>{
+        let cls = "";
+        if(oi===userAns && oi===q.correct) cls="both";
+        else if(oi===userAns) cls="your";
+        else if(oi===q.correct) cls="correctans";
+        if(!cls) return `<div class="ans-opt">${opt}</div>`;
+        const labelExtra = (oi===userAns && oi!==q.correct) ? " (your answer)" : (oi===q.correct ? " (correct answer)" : "");
+        return `<div class="ans-opt ${cls}">${opt}${labelExtra}</div>`;
+      }).join("")}
+    </div>`;
+  });
+
+  return `
+  <div class="card">
+    <div class="tag">Coaching Report — Pre-Assessment: Managing Cloud Security (PAZM)</div>
+    <h2 style="margin:6px 0 2px;">Attempt ${state.attemptNum || 1} Results</h2>
+    <p class="desc">Time used: ${fmtTime(elapsedSec)} &nbsp;|&nbsp; # of Questions: ${QUESTIONS.length}</p>
+    <div style="display:flex;align-items:baseline;gap:16px;margin:14px 0;">
+      <div class="summary-score">${overallPct}%</div>
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;" class="${passed?'status-pass':'status-fail'}">${passed?'PASSED':'NOT PASSED'}</div>
+        <div class="desc">${correctTotal} of ${QUESTIONS.length} correct</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Competencies and Topics</h3>
+    ${compHtml}
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Question Review</h3>
+    ${filterHtml}
+    ${reviewHtml || '<p class="desc">No questions match this filter.</p>'}
+  </div>
+  <div class="card" style="text-align:center;">
+    <button class="secondary" id="retakeBtn">Retake Assessment</button>
+  </div>`;
+}
+
+function attachHandlers(){
+  const startBtn = document.getElementById("startBtn");
+  if(startBtn){
+    startBtn.onclick = ()=>{
+      state.order = shuffle(QUESTIONS.map((q,i)=>i));
+      state.answers = {};
+      state.startTime = Date.now();
+      state.screen = "exam";
+      render();
+      window.scrollTo(0,0);
+    };
+  }
+  document.querySelectorAll('.card[data-qn] input[type=radio]').forEach(inp=>{
+    inp.onchange = (e)=>{
+      const qn = parseInt(e.target.closest('.card').dataset.qn,10);
+      state.answers[qn] = parseInt(e.target.value,10);
+      render();
+    };
+  });
+  const submitBtn = document.getElementById("submitBtn");
+  if(submitBtn){
+    submitBtn.onclick = ()=>{
+      const total = QUESTIONS.length;
+      const answered = Object.keys(state.answers).length;
+      if(answered < total){
+        if(!confirm(`You have answered ${answered} of ${total} questions. Submit anyway?`)) return;
+      }
+      state.endTime = Date.now();
+      state.attemptNum = (state.attemptNum||0) + 1;
+      state.screen = "results";
+      state.filter = "all";
+      render();
+      window.scrollTo(0,0);
+    };
+  }
+  const retakeBtn = document.getElementById("retakeBtn");
+  if(retakeBtn){
+    retakeBtn.onclick = ()=>{
+      state.screen = "start";
+      render();
+      window.scrollTo(0,0);
+    };
+  }
+  document.querySelectorAll('.filterbar button').forEach(b=>{
+    b.onclick = ()=>{
+      state.filter = b.dataset.f;
+      render();
+    };
+  });
+}
+
+render();
+</script>
+</body>
+</html>
